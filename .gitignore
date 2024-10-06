@@ -1,0 +1,10 @@
+__pycache__/
+web3-env/
+*.json
+*.bin
+node_modules/
+.vscode/
+.idea/
+/deployment/compiled_*
+/deployment/Toto42_abi.json
+/deployment/Toto42_bytecode.json
