@@ -8,3 +8,4 @@ node_modules/
 /deployment/compiled_*
 /deployment/Toto42_abi.json
 /deployment/Toto42_bytecode.json
+.env

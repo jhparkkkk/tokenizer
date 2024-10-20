@@ -1,10 +1,149 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.12;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./Ownable.sol";
 
-contract Toto42 is ERC20 {
-    constructor(uint256 initialSupply) ERC20("Toto42", "TT42") {
-        _mint(msg.sender, initialSupply);
+contract Toto42 is Ownable{
+    mapping(address => uint256) private _balances;
+
+    mapping(address => mapping(address => uint256)) private _allowances;
+
+    string private _name = "Toto42";
+
+    string private _symbol = "$TOTO42";
+
+    uint256 private _totalSupply = 0;
+
+    uint256 private _decimals = 18;
+
+    function name() public view returns(string memory){
+        return _name;
+    }
+
+    function symbol() public view returns (string memory){
+        return _symbol;
+    }
+
+    function decimals() public view returns (uint256) {
+        return _decimals;
+    }
+
+    function totalSupply() public view returns (uint256) {
+        return _totalSupply;
+    }
+    function balanceOf(address account) public view returns (uint256) {
+        return _balances[account];
+    }
+
+    function allowance(address owner, address spender) public view returns (uint256) {
+        return _allowances[owner][spender];
+    }
+
+    function approve(address spender, uint256 amount) public virtual returns (bool) {
+        address owner = msg.sender;
+        _approve(owner, spender, amount);
+        return true;
+    }
+
+    function _approve(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
+        require(owner != address(0), "ERC20: approve from the zero address");
+        require(spender != address(0), "ERC20: approve to the zero address");
+
+        _allowances[owner][spender] = amount;
+
+        emit Approval(owner, spender, amount);
+    }
+    
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+
+    function transfer(address to, uint256 amount) public returns (bool success){
+
+        address owner = msg.sender;
+
+        _transfer(owner, to, amount);
+        return true;
+    }
+
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {
+        require(from != address(0), "ERC20: transfer from the zero address");
+        require(to != address(0), "ERC20: transfer to the zero address");
+
+        uint256 fromBalance = _balances[from];
+        require(fromBalance >= amount, "ERC20: transfer amount exceeds balance");
+
+        unchecked {
+            _balances[from] = fromBalance - amount;
+        }
+
+        _balances[to] += amount;
+
+        emit Transfer(from, to, amount);
+
+    }
+    
+    event Transfer(address indexed from, address indexed to, uint256 value);
+
+    function transferFrom(
+        address from,
+        address to,
+        uint256 amount
+    ) public returns (bool) {
+        address spender = msg.sender;
+        _spendAllowance(from, spender, amount);
+        _transfer(from, to, amount);
+        return true;
+    }
+
+    function _spendAllowance(
+        address owner,
+        address spender,
+        uint256 amount
+    ) internal virtual {
+        uint256 currentAllowance = allowance(owner, spender);
+        if (currentAllowance != type(uint256).max) {
+            require(currentAllowance >= amount, "ERC20: insufficient allowance");
+            unchecked {
+                _approve(owner, spender, currentAllowance - amount);
+            }
+        }
+    }
+
+    function mint(address to, uint256 amount) public onlyOwner virtual {
+        _mint(to, amount);
+    }
+
+    function _mint(address account, uint256 amount) internal {
+        require(account != address(0), "ERC20: mint to the zero address");
+
+        _totalSupply += amount;
+
+        _balances[account] += amount;
+        emit Transfer(address(0), account, amount);
+    }
+
+    function burnFrom(address account, uint256 amount) public {
+        _spendAllowance(account, msg.sender, amount);
+        _burn(account, amount);
+    }
+
+    function _burn(address account, uint256 amount) internal {
+        require(account != address(0), "ERC20: burn from the zero address");
+
+        uint256 accountBalance = _balances[account];
+        require(accountBalance >= amount, "ERC20: burn amount exceeds balance!!");
+        unchecked {
+            _balances[account] = accountBalance - amount;
+        }
+        _totalSupply -= amount;
+
+        emit Transfer(account, address(0), amount);
     }
 }
