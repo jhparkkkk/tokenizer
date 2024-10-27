@@ -1,13 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-// basic ownership functions
-// 1) Ability to assert someone is an owner of a smart contract
-// 2) Ability to restrict function calling to the contract owner
-// 3) Ability to transfer ownership to another wallet
-
 pragma solidity ^0.8.0;
 
-// Ownable.sol = provides contract ownership functions
 abstract contract Ownable {
 
     address private _owner;
